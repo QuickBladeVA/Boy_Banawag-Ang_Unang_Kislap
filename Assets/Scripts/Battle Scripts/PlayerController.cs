@@ -1,8 +1,10 @@
+using Photon.Pun;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks,IPunObservable
 {
     public Character character;
     public Move move = Move.Idle;
@@ -16,16 +18,42 @@ public class PlayerController : MonoBehaviour
     public bool hasSuper = false;
     public bool hasSuperGained = false;
 
-
-    KeyCode LPunchKey = KeyCode.Z;
-    KeyCode RPunchKey = KeyCode.X;
-    KeyCode LDodgeKey = KeyCode.LeftArrow;
-    KeyCode RDodgeKey = KeyCode.RightArrow;
+    public KeyCode LPunchKey;
+    public KeyCode RPunchKey; 
+    public KeyCode LDodgeKey;
+    public KeyCode RDodgeKey;
 
     bool isNotMoving = true;
 
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // We own this player: send the others our data
+            stream.SendNext(move);
+            stream.SendNext(isKnockedOut);
+            stream.SendNext(isHit);
+            stream.SendNext(isTired);
+            stream.SendNext(isNotMoving);
+            stream.SendNext(hasSuper);
+            stream.SendNext(hasSuperGained);
+        }
+        else
+        {
+            // Network player, receive data
+            this.move = (Move)stream.ReceiveNext();
+            this.isKnockedOut = (bool)stream.ReceiveNext();
+            this.isHit = (bool)stream.ReceiveNext();
+            this.isTired = (bool)stream.ReceiveNext();
+            this.isNotMoving = (bool)stream.ReceiveNext();
+            this.hasSuper = (bool)stream.ReceiveNext();
+            this.hasSuperGained = (bool)stream.ReceiveNext();
+        }
+
+    }
+
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (character == null)
         {
@@ -41,6 +69,26 @@ public class PlayerController : MonoBehaviour
             stamina = 5;
         }
 
+    }
+    private void Start()
+    {
+        if (BattleManager.instance.isPvP && !GameManager.instance.Local) {
+            if (photonView.IsMine && GameManager.instance.playerNumber == 1)
+            {
+
+                LPunchKey = KeyCode.Z;
+                RPunchKey = KeyCode.X;
+                LDodgeKey = KeyCode.LeftArrow;
+                RDodgeKey = KeyCode.RightArrow;
+            }
+        }
+        if (!BattleManager.instance.isPvP || GameManager.instance.Local) 
+        {
+            LPunchKey = KeyCode.Z;
+            RPunchKey = KeyCode.X;
+            LDodgeKey = KeyCode.LeftArrow;
+            RDodgeKey = KeyCode.RightArrow;
+        }
         StartCoroutine(Action());
         StartCoroutine(StaminaRegen());
     }
@@ -49,14 +97,30 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            if (stamina < 5 && !isTired)
+
+            if (BattleManager.instance.isPvP)
             {
-                yield return new WaitForSeconds(5f); // Wait for 5 seconds
-                stamina = 5; 
+                if (stamina < 5 && !isTired)
+                {
+                    yield return new WaitForSeconds(3); // Wait for 5 seconds
+                    stamina += 2;
+                }
+                else
+                {
+                    yield return null; // If stamina is full, just wait for the next frame
+                }
             }
             else
             {
-                yield return null; // If stamina is full, just wait for the next frame
+                if (stamina < 5 && !isTired)
+                {
+                    yield return new WaitForSeconds(5); // Wait for 5 seconds
+                    stamina += 3;
+                }
+                else
+                {
+                    yield return null; // If stamina is full, just wait for the next frame
+                }
             }
         }
     }
@@ -89,8 +153,14 @@ public class PlayerController : MonoBehaviour
             {
                 isTired = true;
                 move = Move.Idle;
-                yield return new WaitForSeconds(5f);
-                stamina = 5;
+                if (BattleManager.instance.isPvP)
+                {
+                    yield return new WaitForSeconds(3f);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(5f);
+                }
                 isTired = false;
             }
 

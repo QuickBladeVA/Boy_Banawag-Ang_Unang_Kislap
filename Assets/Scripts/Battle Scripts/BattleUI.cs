@@ -6,49 +6,81 @@ using UnityEngine.UI;
 
 public class BattleUI : MonoBehaviour
 {
+    private BattleManager bManager;
+    private PlayerController player;
+    private PlayerController2 player2;
+    private AIController enemy;
 
-    BattleManager bManager;
+    public Slider playerHealthSlider;
+    public Slider playerStaminaSlider;
+    public Slider playerSuperPunchSlider;
+    public Slider enemyHealthSlider;
 
-    public Slider playerSlider;
-    public Slider enemySlider;
-    public Slider playerStamina;
-    public Slider playerSuperPunch;
+    // PvP
+    public Slider enemyStaminaSlider;
+    public Slider enemySuperPunchSlider;
 
-    public TextMeshProUGUI StaminaPoints;
+    private const int MaxStamina = 5;
+    private const int MaxSuperPunch = 75;
 
-    // Start is called before the first frame update
     void Start()
     {
         bManager = BattleManager.instance;
 
-        try
+        player = bManager.player;
+        player2 = bManager.player2;
+        enemy = bManager.enemy;
+
+        InitializePlayerSliders(player.health,playerHealthSlider, playerStaminaSlider, playerSuperPunchSlider);
+
+        if (bManager.isPvP)
         {
-            playerSlider.maxValue = bManager.player.health;
-            playerSlider.value = bManager.player.health;
-            playerStamina.maxValue = 5;
-            playerStamina.value = bManager.player.stamina;
-            playerSuperPunch.maxValue = 75;
-            playerSuperPunch.value = bManager.player.superPunch;
-
-            enemySlider.maxValue = bManager.enemy.health;
-            enemySlider.value = bManager.player.health;
-
-            StaminaPoints.text = bManager.player.stamina.ToString();
+            InitializePlayerSliders(player2.health, enemyHealthSlider, enemyStaminaSlider, enemySuperPunchSlider);
         }
-        catch 
+        if (!bManager.isPvP)
         {
-            Debug.Log("Some UI Is Missing Check BattleUI In BattleManager");
+            InitializeEnemySlider();
         }
-
     }
 
-    // Update is called once per frame
+    private void InitializePlayerSliders(int maxHealth,Slider healthSlider, Slider staminaSlider, Slider superPunchSlider)
+    {
+        healthSlider.maxValue = maxHealth;
+
+        staminaSlider.maxValue = MaxStamina;
+
+        superPunchSlider.maxValue = MaxSuperPunch;
+    }
+
+    private void InitializeEnemySlider()
+    {
+        if (!bManager.isPvP)
+        {
+            enemyHealthSlider.maxValue = bManager.enemy.health ;
+        }
+    }
+
     void Update()
     {
-        playerSlider.value = bManager.player.health;
-        enemySlider.value = bManager.enemy.health;
-        playerStamina.value = bManager.player.stamina;
-        playerSuperPunch.value = bManager.player.superPunch;
-        StaminaPoints.text = bManager.player.stamina.ToString();
+        UpdatePlayerSliders(player.health, player.stamina, player.superPunch, playerHealthSlider, playerStaminaSlider, playerSuperPunchSlider);
+
+        if (bManager.isPvP)
+        {
+            UpdatePlayerSliders(player2.health, player2.stamina, player2.superPunch, enemyHealthSlider, enemyStaminaSlider, enemySuperPunchSlider);
+        }
+        else
+        {
+            if (enemy != null)
+            {
+                enemyHealthSlider.value = enemy.health;
+            }
+        }
+    }
+
+    private void UpdatePlayerSliders(int health, int stamina, int superPunch, Slider healthSlider, Slider staminaSlider, Slider superPunchSlider)
+    {
+        healthSlider.value = health;
+        staminaSlider.value = stamina;
+        superPunchSlider.value = superPunch;
     }
 }

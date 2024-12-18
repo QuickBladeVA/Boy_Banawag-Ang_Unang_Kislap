@@ -9,7 +9,7 @@ public class AIController : MonoBehaviour
     public Move move;
  
     public string characterName;
-    public int health, attack, speed;
+    public int health,maxHealth, attack, speed;
     public bool isKnockedOut = false;
     public bool isHit = false;
 
@@ -33,7 +33,7 @@ public class AIController : MonoBehaviour
     int selection = 0;
 
 
-    private void Start()
+    private void Awake()
     {
         if (character == null)
         {
@@ -43,6 +43,7 @@ public class AIController : MonoBehaviour
         {
             characterName = character.name;
             health = character.hp;
+            maxHealth = health;
             attack = character.atk;
             speed = character.spd;
         }

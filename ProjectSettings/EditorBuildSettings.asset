@@ -59,4 +59,22 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LS.unity
     guid: 598ae8babb5665d4aa304102060a2e87
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: ab4a47cbc818d1545a44cad9a299988e
+  - enabled: 1
+    path: Assets/Scenes/Local PVP.unity
+    guid: 95447653f3a3b1d428d43d1399cdf007
+  - enabled: 1
+    path: Assets/Scenes/OLS.unity
+    guid: 3f44b7958268dc44fb2954ddffc69e81
+  - enabled: 1
+    path: Assets/Scenes/WRS.unity
+    guid: 2837bd2ba856c6248b10ac32e02890d3
+  - enabled: 1
+    path: Assets/Scenes/PVP.unity
+    guid: a81bd2573950b124ea15a3fe5e9819eb
+  - enabled: 1
+    path: Assets/Scenes/Load.unity
+    guid: bd4d455bd8ac72948b59e5db9019d5ce
   m_configObjects: {}
